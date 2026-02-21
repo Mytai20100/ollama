@@ -1,9 +1,4 @@
 #!/bin/sh
-# This script installs Ollama on Linux 
-# It detects the current operating system architecture and installs the appropriate version of Ollama.
-
-# Wrap script in main function so that a truncated partial download doesn't end
-# up executing half a script.
 main() {
 set -eu
 
@@ -33,8 +28,7 @@ FILENAME="ollama-linux-${ARCH}"
 
 status "Downloading Ollama ($ARCH)..."
 
-if curl --fail --silent --head --location "${URL_BASE}/${FILENAME}.tar.zst${VER_PARAM}" >/dev/null 2>&1; then
-    available zstd || error "Missing: zstd — apt-get install -y zstd"
+if available zstd && curl --fail --silent --head --location "${URL_BASE}/${FILENAME}.tar.zst${VER_PARAM}" >/dev/null 2>&1; then
     curl --fail --show-error --location --progress-bar \
         "${URL_BASE}/${FILENAME}.tar.zst${VER_PARAM}" | zstd -d | tar -xf - -C "$INSTALL_DIR"
 else
@@ -44,9 +38,7 @@ fi
 
 [ -f "$INSTALL_DIR/ollama" ] && ln -sf "$INSTALL_DIR/ollama" "$BIN_DIR/ollama"
 [ -f "$BIN_DIR/ollama" ] || error "Binary not found after extraction"
-
 chmod +x "$BIN_DIR/ollama"
 status "Done."
 }
-
 main
